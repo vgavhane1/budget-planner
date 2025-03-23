@@ -1,40 +1,84 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+import json
+import os
+
 app = Flask(__name__)
+app.secret_key = "your_secret_key"  # For session management
 
-# Global dictionary to hold user data (in-memory for simplicity)
-budget_data = {
-    "income": 0,
-    "expenses": []
-}
+USER_DATA_FILE = 'user_data.json'
+BUDGET_DATA_FILE = 'budget_data.json'
 
-@app.route('/')
-def index():
-    # Pass the budget data to the frontend
-    total_expenses = sum(expense['amount'] for expense in budget_data["expenses"])
-    remaining_balance = budget_data["income"] - total_expenses
-    return render_template('index.html',
-                           income=budget_data["income"],
-                           expenses=budget_data["expenses"],
-                           total_expenses=total_expenses,
-                           remaining_balance=remaining_balance)
 
-@app.route('/add_income', methods=['POST'])
-def add_income():
-    income = request.form['income']
-    if income:
-        budget_data["income"] = float(income)
-    return index()
+def load_data(file):
+    """ Load data from a JSON file. """
+    if os.path.exists(file):
+        with open(file, 'r') as f:
+            return json.load(f)
+    return {}
 
-@app.route('/add_expense', methods=['POST'])
-def add_expense():
-    expense_name = request.form['expense_name']
-    expense_amount = request.form['expense_amount']
-    if expense_name and expense_amount:
-        budget_data["expenses"].append({
-            "name": expense_name,
-            "amount": float(expense_amount)
-        })
-    return index()
+
+def save_data(file, data):
+    """ Save data to a JSON file. """
+    with open(file, 'w') as f:
+        json.dump(data, f)
+
+
+@app.route("/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        
+        users = load_data(USER_DATA_FILE)
+
+        if users.get(username) == password:
+            session["username"] = username
+            return redirect(url_for("dashboard"))
+        else:
+            return render_template("index.html", error="Invalid credentials!")
+    
+    return render_template("index.html")
+
+
+@app.route("/dashboard", methods=["GET", "POST"])
+def dashboard():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    username = session["username"]
+    budget_data = load_data(BUDGET_DATA_FILE)
+    
+    if request.method == "POST":
+        category = request.form.get("category")
+        amount = float(request.form.get("amount"))
+        
+        if username not in budget_data:
+            budget_data[username] = {"budget_items": []}
+        
+        budget_data[username]["budget_items"].append({"category": category, "amount": amount})
+        save_data(BUDGET_DATA_FILE, budget_data)
+    
+    budget_items = budget_data.get(username, {}).get("budget_items", [])
+    return render_template("dashboard.html", username=username, budget_items=budget_items)
+
+
+@app.route("/report")
+def report():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    username = session["username"]
+    budget_data = load_data(BUDGET_DATA_FILE)
+    
+    budget_items = budget_data.get(username, {}).get("budget_items", [])
+    return render_template("report.html", budget_items=budget_items)
+
+
+@app.route("/logout")
+def logout():
+    session.pop("username", None)
+    return redirect(url_for("login"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

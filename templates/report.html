@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 50px; }
+        .container { width: 500px; padding: 20px; background-color: #fff; border-radius: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .container h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 8px; text-align: center; }
+        .button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Budget Report</h2>
+    <table>
+        <tr>
+            <th>Category</th>
+            <th>Amount</th>
+        </tr>
+        {% for item in budget_items %}
+        <tr>
+            <td>{{ item.category }}</td>
+            <td>{{ item.amount }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="{{ url_for('dashboard') }}" class="button">Back to Dashboard</a>
+</div>
+
+</body>
+</html>
