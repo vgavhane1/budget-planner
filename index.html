@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Planner</title>
+</head>
+<body>
+    <h1>Budget Planner</h1>
+
+    <form action="/cgi-bin/budget_planner.py" method="POST">
+        <h2>Enter Your Income</h2>
+        <label for="income">Income:</label>
+        <input type="number" name="income" id="income" required><br><br>
+
+        <h2>Enter Your Expenses</h2>
+        <label for="expense_name">Expense Name:</label>
+        <input type="text" name="expense_name" id="expense_name" required><br><br>
+
+        <label for="expense_amount">Expense Amount:</label>
+        <input type="number" name="expense_amount" id="expense_amount" required><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
